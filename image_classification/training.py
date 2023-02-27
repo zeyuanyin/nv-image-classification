@@ -47,6 +47,9 @@ from .models.common import EMA
 global temperature
 temperature = 3
 
+global loss_scale
+loss_scale = 3.
+
 class Executor:
     def __init__(
         self,
@@ -100,6 +103,8 @@ class Executor:
             loss = kl_loss(output, target)  # kd loss
             # loss = self.loss(self.model(input), target)
             loss /= self.divide_loss
+
+            loss = loss * loss_scale
 
         self.scaler.scale(loss).backward()
         return loss
