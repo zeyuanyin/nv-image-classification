@@ -355,6 +355,13 @@ def add_parser_arguments(parser, skip_arch=False):
         required=False,
     )
 
+    parser.add_argument(
+        "--wandb_name",
+        type=str,
+        default='noraml training',
+        required=False,
+    )
+
 
 def prepare_for_training(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
     args.distributed = False
@@ -667,11 +674,6 @@ def main(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
 
 if __name__ == "__main__":
 
-    import wandb
-    wandb.login(key='d15c9070e9dbb45d5decc4735216c27bb89f18a4')
-    wandb.init(project='nv-code', name='noraml training')
-
-
     epilog = [
         "Based on the architecture picked by --arch flag, you may use the following options:\n"
     ]
@@ -687,6 +689,11 @@ if __name__ == "__main__":
     add_parser_arguments(parser)
 
     args, rest = parser.parse_known_args()
+
+    import wandb
+    wandb.login(key='d15c9070e9dbb45d5decc4735216c27bb89f18a4')
+    wandb.init(project='nv-code', name=args.wandb_name)
+
 
     model_arch = available_models()[args.arch]
     model_args, rest = model_arch.parser().parse_known_args(rest)
