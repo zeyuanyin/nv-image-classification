@@ -2,3 +2,5 @@
 *cache*/
 wandb/
 *.pyc
+image_classification/__pycache__/__init__.cpython-38.pyc
+image_classification/__pycache__/__init__.cpython-38.pyc
