@@ -93,10 +93,11 @@ class Executor:
         target: torch.Tensor,
     ) -> torch.Tensor:
         with autocast(enabled=self.amp):
+            kl_loss  = nn.KLDivLoss(reduction='batchmean')
             output = self.model(input)
             output = F.log_softmax(output/temperature, dim=1)
             target = F.softmax(target/temperature, dim=1)
-            loss = self.loss(output, target)  # kd loss
+            loss = kl_loss(output, target)  # kd loss
             # loss = self.loss(self.model(input), target)
             loss /= self.divide_loss
 

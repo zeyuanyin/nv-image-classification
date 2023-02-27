@@ -457,9 +457,9 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
         model_state_ema = None
         optimizer_state = None
 
-    loss = nn.KLDivLoss
+    # loss = nn.KLDivLoss
     # loss = nn.KLDivLoss (reduction='batchmean')
-    # loss = nn.CrossEntropyLoss
+    loss = nn.CrossEntropyLoss
     # if args.mixup > 0.0:
     #     loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
     # elif args.label_smoothing > 0.0:
