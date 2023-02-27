@@ -356,7 +356,7 @@ def add_parser_arguments(parser, skip_arch=False):
     )
 
 
-def prepare_for_training(args, model_args, model_arch):
+def prepare_for_training(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
     args.distributed = False
     if "WORLD_SIZE" in os.environ:
         args.distributed = int(os.environ["WORLD_SIZE"]) > 1
@@ -450,11 +450,12 @@ def prepare_for_training(args, model_args, model_arch):
         model_state_ema = None
         optimizer_state = None
 
-    loss = nn.CrossEntropyLoss
-    if args.mixup > 0.0:
-        loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
-    elif args.label_smoothing > 0.0:
-        loss = lambda: LabelSmoothing(args.label_smoothing)
+    loss = nn.KLDivLoss(reduction='batchmean')
+    # loss = nn.CrossEntropyLoss
+    # if args.mixup > 0.0:
+    #     loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
+    # elif args.label_smoothing > 0.0:
+    #     loss = lambda: LabelSmoothing(args.label_smoothing)
 
     memory_format = (
         torch.channels_last if args.memory_format == "nhwc" else torch.contiguous_format
@@ -465,6 +466,17 @@ def prepare_for_training(args, model_args, model_arch):
             if k != "pretrained"
             else v and (not args.distributed or dist.get_rank() == 0)
             for k, v in model_args.__dict__.items()
+        }
+    )
+
+
+    if args.teacher_model is not None:
+        teacher_model = teacher_model_arch(
+        **{
+            k: v
+            if k != "pretrained"
+            else v and (not args.distributed or dist.get_rank() == 0)
+            for k, v in teacher_model_args.__dict__.items()
         }
     )
 
@@ -605,10 +617,11 @@ def prepare_for_training(args, model_args, model_arch):
         logger,
         start_epoch,
         best_prec1,
+        teacher_model
     )
 
 
-def main(args, model_args, model_arch):
+def main(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
     exp_start_time = time.time()
 
     (
@@ -620,7 +633,8 @@ def main(args, model_args, model_arch):
         logger,
         start_epoch,
         best_prec1,
-    ) = prepare_for_training(args, model_args, model_arch)
+        teacher_model,
+    ) = prepare_for_training(args, model_args, model_arch, teacher_model_args, teacher_model_arch)
 
     train_loop(
         trainer,
@@ -643,6 +657,7 @@ def main(args, model_args, model_arch):
         checkpoint_filename=args.checkpoint_filename,
         keep_last_n_checkpoints=args.gather_checkpoints,
         topk=args.topk,
+        teacher_model=teacher_model,
     )
     exp_duration = time.time() - exp_start_time
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
@@ -680,14 +695,14 @@ if __name__ == "__main__":
     print(model_args)
 
     # load teacher model
-    # args.pretrained = True
-    # teacher_model_arch = available_models()[args.arch]
-    # teacher_model_args, teacher_rest = teacher_model_arch.parser().parse_known_args(rest)
+    args.pretrained = True
+    teacher_model_arch = available_models()[args.arch]
+    teacher_model_args, teacher_rest = teacher_model_arch.parser().parse_known_args(rest)
 
 
     assert len(rest) == 0, f"Unknown args passed: {rest}"
 
     cudnn.benchmark = True
 
-    main(args, model_args, model_arch)
+    main(args, model_args, model_arch, teacher_model_args, teacher_model_arch)
     wandb.finish()

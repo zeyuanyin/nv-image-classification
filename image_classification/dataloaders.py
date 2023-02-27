@@ -248,7 +248,8 @@ def get_dali_train_loader(dali_cpu=False):
             rank = 0
             world_size = 1
 
-        traindir = os.path.join(data_path, "train")
+        # traindir = os.path.join(data_path, "train")
+        traindir = '/home/zeyuan.yin/imagenet/resnet50v15_2'
         if augmentation is not None:
             raise NotImplementedError(
                 f"Augmentation {augmentation} for dali loader is not supported"

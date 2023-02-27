@@ -36,6 +36,7 @@ import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.nn.functional as F
 import wandb
 
 from . import logger as log
@@ -43,6 +44,8 @@ from . import utils
 from .logger import TrainingMetrics, ValidationMetrics
 from .models.common import EMA
 
+global temperature
+temperature = 3
 
 class Executor:
     def __init__(
@@ -90,7 +93,11 @@ class Executor:
         target: torch.Tensor,
     ) -> torch.Tensor:
         with autocast(enabled=self.amp):
-            loss = self.loss(self.model(input), target)
+            output = self.model(input)
+            output = F.log_softmax(output/temperature, dim=1)
+            target = F.softmax(target/temperature, dim=1)
+            loss = self.loss(output, target)  # kd loss
+            # loss = self.loss(self.model(input), target)
             loss /= self.divide_loss
 
         self.scaler.scale(loss).backward()
@@ -166,7 +173,7 @@ class Trainer:
             self.ema_executor.eval()
 
     def train_step(self, input, target, step=None):
-        loss = self.executor.forward_backward(input, target)
+        loss = self.executor.forward_backward(input, target) # kd loss
 
         self.steps_since_update += 1
 
@@ -212,6 +219,7 @@ def train(
     timeout_handler,
     prof=-1,
     step=0,
+    teacher_model=None,
 ):
     interrupted = False
 
@@ -225,6 +233,13 @@ def train(
         bs = input.size(0)
         lr = lr_scheduler(i)
         data_time = time.time() - end
+
+        if teacher_model is not None:
+            with torch.no_grad():
+                teacher_model.eval()
+                teacher_output = teacher_model(input)
+                target = teacher_output.detach()
+
 
         loss = train_step(input, target, step=step + i)
         it_time = time.time() - end
@@ -344,6 +359,7 @@ def train_loop(
     checkpoint_filename="checkpoint.pth.tar",
     keep_last_n_checkpoints=0,
     topk=5,
+    teacher_model=None,
 ):
     checkpointer = utils.Checkpointer(
         last_filename=checkpoint_filename,
@@ -389,6 +405,7 @@ def train_loop(
                     timeout_handler,
                     prof=prof,
                     step=epoch * train_loader_len,
+                    teacher_model=teacher_model,
                 )
 
 
