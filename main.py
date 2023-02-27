@@ -457,7 +457,8 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
         model_state_ema = None
         optimizer_state = None
 
-    loss = nn.KLDivLoss(reduction='batchmean')
+    loss = nn.KLDivLoss
+    # loss = nn.KLDivLoss (reduction='batchmean')
     # loss = nn.CrossEntropyLoss
     # if args.mixup > 0.0:
     #     loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
@@ -477,8 +478,8 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
     )
 
 
-    if args.teacher_model is not None:
-        teacher_model = teacher_model_arch(
+    # if args.teacher_model is not None:
+    teacher_model = teacher_model_arch(
         **{
             k: v
             if k != "pretrained"
@@ -486,6 +487,15 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
             for k, v in teacher_model_args.__dict__.items()
         }
     )
+
+
+    def xform(m: nn.Module) -> nn.Module:
+            if True:
+                m = m.cuda()
+            m.to(memory_format=memory_format)
+            return m
+
+    teacher_model = xform(teacher_model)
 
     image_size = (
         args.image_size
