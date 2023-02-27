@@ -36,6 +36,7 @@ import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
+import wandb
 
 from . import logger as log
 from . import utils
@@ -251,6 +252,15 @@ def train(
             interrupted = True
             break
 
+    metrics = {
+        "train/loss": reduced_loss.item(),
+        # "train/Top1": top1.avg,
+        # "train/Top5": top5.avg,
+        "train/lr": lr,}
+
+    wandb_metrics.update(metrics)
+
+
     return interrupted
 
 
@@ -351,6 +361,10 @@ def train_loop(
     with utils.TimeoutHandler() as timeout_handler:
         interrupted = False
         for epoch in range(start_epoch, end_epoch):
+
+            global wandb_metrics
+            wandb_metrics = {}
+
             if logger is not None:
                 logger.start_epoch()
             if not skip_training:
@@ -373,6 +387,7 @@ def train_loop(
                     step=epoch * train_loader_len,
                 )
 
+
             if not skip_validation:
                 trainer.eval()
                 for k, infer_fn in trainer.validation_steps().items():
@@ -391,8 +406,16 @@ def train_loop(
                         topk=topk,
                     )
 
+
                     if k == "val":
                         prec1 = step_prec1
+
+
+                metrics = {
+                    "val/Top1": step_prec1,
+                    "val/epoch": epoch,}
+
+                wandb_metrics.update(metrics)
 
                 if prec1 > best_prec1:
                     is_best = True
@@ -402,6 +425,8 @@ def train_loop(
             else:
                 is_best = False
                 best_prec1 = 0
+
+            wandb.log(wandb_metrics)
 
             if logger is not None:
                 logger.end_epoch()

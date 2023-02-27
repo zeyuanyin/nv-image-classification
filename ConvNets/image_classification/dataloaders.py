@@ -426,6 +426,7 @@ def get_pytorch_train_loader(
         interpolation
     ]
     traindir = os.path.join(data_path, "train")
+    # traindir =
     transforms_list = [
         transforms.RandomResizedCrop(image_size, interpolation=interpolation),
         transforms.RandomHorizontalFlip(),
