@@ -426,8 +426,8 @@ def get_pytorch_train_loader(
     interpolation = {"bicubic": Image.BICUBIC, "bilinear": Image.BILINEAR}[
         interpolation
     ]
-    traindir = os.path.join(data_path, "train")
-    # traindir =
+    # traindir = os.path.join(data_path, "train")
+    traindir = '/home/zeyuan.yin/imagenet/resnet50v15_2'
     transforms_list = [
         transforms.RandomResizedCrop(image_size, interpolation=interpolation),
         transforms.RandomHorizontalFlip(),
