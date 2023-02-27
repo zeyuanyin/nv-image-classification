@@ -219,6 +219,8 @@ def train(
 
     data_iter = enumerate(train_loader)
 
+    loss_list = []
+
     for i, (input, target) in data_iter:
         bs = input.size(0)
         lr = lr_scheduler(i)
@@ -243,6 +245,8 @@ def train(
             grad_scale=grad_scale_fn(),
         )
 
+        loss_list.append(reduced_loss.item())
+
         end = time.time()
         if prof > 0 and (i + 1 >= prof):
             time.sleep(5)
@@ -253,7 +257,7 @@ def train(
             break
 
     metrics = {
-        "train/loss": reduced_loss.item(),
+        "train/loss": sum(loss_list) / len(loss_list),
         # "train/Top1": top1.avg,
         # "train/Top5": top5.avg,
         "train/lr": lr,}
