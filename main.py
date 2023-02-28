@@ -615,7 +615,7 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
     )
 
     if args.lr_schedule == "step":
-        lr_policy = lr_step_policy(args.lr, [30, 60, 80], 0.1, args.warmup)
+        lr_policy = lr_step_policy(args.lr, [100,200,300,400,500], 0.1, args.warmup)
     elif args.lr_schedule == "cosine":
         lr_policy = lr_cosine_policy(
             args.lr, args.warmup, args.epochs, end_lr=args.end_lr
