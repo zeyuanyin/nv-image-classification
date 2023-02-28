@@ -721,6 +721,9 @@ if __name__ == "__main__":
     wandb.login(key='d15c9070e9dbb45d5decc4735216c27bb89f18a4')
     wandb.init(project='nv-code', name=args.wandb_name)
 
+    args.workspace = os.path.join(args.workspace, args.wandb_name)
+    if not os.path.exists(args.workspace):
+        os.makedirs(args.workspace)
 
     model_arch = available_models()[args.arch]
     model_args, rest = model_arch.parser().parse_known_args(rest)
