@@ -362,6 +362,17 @@ def add_parser_arguments(parser, skip_arch=False):
         required=False,
     )
 
+    parser.add_argument(
+        "--loss_scale",
+        type=str,
+        default='1.',
+        required=False,
+        help="scale for larger loss values"
+    )
+
+
+
+
 
 def prepare_for_training(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
     args.distributed = False
@@ -521,6 +532,7 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
         scaler=scaler,
         divide_loss=batch_size_multiplier,
         ts_script=args.jit == "script",
+        loss_scale = args.loss_scale,
     )
 
     # Create data loaders and optimizers as needed

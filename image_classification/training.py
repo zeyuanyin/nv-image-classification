@@ -47,8 +47,8 @@ from .models.common import EMA
 global temperature
 temperature = 3
 
-global loss_scale
-loss_scale = 1.
+# global loss_scale
+# loss_scale = 1.
 
 class Executor:
     def __init__(
@@ -61,6 +61,7 @@ class Executor:
         scaler: Optional[torch.cuda.amp.GradScaler] = None,
         divide_loss: int = 1,
         ts_script: bool = False,
+        loss_scale: float = 1.,
     ):
         assert not (amp and scaler is None), "Gradient Scaler is needed for AMP"
 
