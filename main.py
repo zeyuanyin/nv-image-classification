@@ -315,7 +315,7 @@ def add_parser_arguments(parser, skip_arch=False):
         help="no -> do not use torch.jit; script -> use torch.jit.script",
     )
 
-    parser.add_argument("--checkpoint-filename", default="checkpoint.pth.tar", type=str)
+    parser.add_argument("--checkpoint-filename", default="save/checkpoint.pth.tar", type=str)
 
     parser.add_argument(
         "--workspace",
@@ -420,7 +420,7 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
                 )
             )
         batch_size_multiplier = int(args.optimizer_batch_size / tbs)
-        print("BSM: {}".format(batch_size_multiplier))
+    print("BSM: {}".format(batch_size_multiplier))
 
     start_epoch = 0
     best_prec1 = 0
@@ -459,11 +459,12 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
 
     # loss = nn.KLDivLoss
     # loss = nn.KLDivLoss (reduction='batchmean')
+    # loss for eval
     loss = nn.CrossEntropyLoss
-    # if args.mixup > 0.0:
-    #     loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
-    # elif args.label_smoothing > 0.0:
-    #     loss = lambda: LabelSmoothing(args.label_smoothing)
+    if args.mixup > 0.0:
+        loss = lambda: NLLMultiLabelSmooth(args.label_smoothing)
+    elif args.label_smoothing > 0.0:
+        loss = lambda: LabelSmoothing(args.label_smoothing)
 
     memory_format = (
         torch.channels_last if args.memory_format == "nhwc" else torch.contiguous_format

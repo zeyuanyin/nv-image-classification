@@ -74,6 +74,9 @@ class EntryPoint:
         state_dict = None
         if pretrained:
             assert self.model.checkpoint_url is not None
+            print("=> loading pretrained weights from NGC link {}".format(
+                self.model.checkpoint_url
+            ))
             state_dict = torch.hub.load_state_dict_from_url(
                 self.model.checkpoint_url,
                 map_location=torch.device("cpu"),
@@ -148,6 +151,8 @@ class EntryPoint:
             }
 
             model.load_state_dict(state_dict)
+        else:
+            print("=> no pretrained weights used, training from scratch")
         return model
 
     def parser(self):
