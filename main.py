@@ -589,10 +589,11 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
                 dllogger.StdOutBackend(
                     dllogger.Verbosity.DEFAULT, step_format=log.format_step
                 ),
-                dllogger.JSONStreamBackend(
-                    dllogger.Verbosity.VERBOSE,
-                    os.path.join(args.workspace, args.raport_file),
-                ),
+                # do not log to file by default
+                # dllogger.JSONStreamBackend(
+                #     dllogger.Verbosity.VERBOSE,
+                #     os.path.join(args.workspace, args.raport_file),
+                # ),
             ],
             start_epoch=start_epoch - 1,
         )
