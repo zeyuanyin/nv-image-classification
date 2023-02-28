@@ -48,7 +48,7 @@ global temperature
 temperature = 3
 
 global loss_scale
-loss_scale = 3.
+loss_scale = 1.
 
 class Executor:
     def __init__(
