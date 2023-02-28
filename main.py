@@ -635,7 +635,8 @@ def prepare_for_training(args, model_args, model_arch, teacher_model_args, teach
         logger,
         start_epoch,
         best_prec1,
-        teacher_model
+        teacher_model,
+        batch_size_multiplier
     )
 
 
@@ -652,6 +653,7 @@ def main(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
         start_epoch,
         best_prec1,
         teacher_model,
+        batch_size_multiplier
     ) = prepare_for_training(args, model_args, model_arch, teacher_model_args, teacher_model_arch)
 
     train_loop(
@@ -676,6 +678,7 @@ def main(args, model_args, model_arch, teacher_model_args, teacher_model_arch):
         keep_last_n_checkpoints=args.gather_checkpoints,
         topk=args.topk,
         teacher_model=teacher_model,
+        divide_loss=batch_size_multiplier,
     )
     exp_duration = time.time() - exp_start_time
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:

@@ -366,6 +366,7 @@ def train_loop(
     keep_last_n_checkpoints=0,
     topk=5,
     teacher_model=None,
+    divide_loss=1,
 ):
     checkpointer = utils.Checkpointer(
         last_filename=checkpoint_filename,
@@ -453,6 +454,7 @@ def train_loop(
                 is_best = False
                 best_prec1 = 0
 
+            wandb_metrics["train/loss"] = wandb_metrics.get("train/loss") * divide_loss
             wandb.log(wandb_metrics)
 
             if logger is not None:
