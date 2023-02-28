@@ -708,17 +708,16 @@ if __name__ == "__main__":
 
     model_arch = available_models()[args.arch]
     model_args, rest = model_arch.parser().parse_known_args(rest)
-
-    print(model_arch)
-    print(model_args)
+    # print(model_arch)
+    # print(model_args)
+    assert len(rest) == 0, f"Unknown args passed: {rest}"
 
     # load teacher model
-    args.pretrained = True
+    rest.append('--pretrained')
     teacher_model_arch = available_models()[args.arch]
     teacher_model_args, teacher_rest = teacher_model_arch.parser().parse_known_args(rest)
 
 
-    assert len(rest) == 0, f"Unknown args passed: {rest}"
 
     cudnn.benchmark = True
 
