@@ -280,7 +280,7 @@ def add_parser_arguments(parser, skip_arch=False):
 
     parser.add_argument(
         "--gather-checkpoints",
-        default="0",
+        default=1,
         type=int,
         help=(
             "Gather N last checkpoints throughout the training,"
@@ -315,12 +315,12 @@ def add_parser_arguments(parser, skip_arch=False):
         help="no -> do not use torch.jit; script -> use torch.jit.script",
     )
 
-    parser.add_argument("--checkpoint-filename", default="save/checkpoint.pth.tar", type=str)
+    parser.add_argument("--checkpoint-filename", default="checkpoint.pth.tar", type=str)
 
     parser.add_argument(
         "--workspace",
         type=str,
-        default="./",
+        default="./save/",
         metavar="DIR",
         help="path to directory where checkpoints will be stored",
     )

@@ -82,6 +82,7 @@ class Executor:
         self.divide_loss = divide_loss
         self._fwd_bwd = None
         self._forward = None
+        self.loss_scale = loss_scale
 
     def distributed(self, gpu_id):
         self.is_distributed = True
@@ -105,7 +106,7 @@ class Executor:
             # loss = self.loss(self.model(input), target)
             loss /= self.divide_loss
 
-            loss = loss * loss_scale
+            loss = loss * self.loss_scale
 
         self.scaler.scale(loss).backward()
         return loss
