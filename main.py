@@ -364,8 +364,8 @@ def add_parser_arguments(parser, skip_arch=False):
 
     parser.add_argument(
         "--loss_scale",
-        type=str,
-        default='1.',
+        type=float,
+        default=1.,
         required=False,
         help="scale for larger loss values"
     )
